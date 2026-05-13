@@ -36,8 +36,8 @@ app.post('/nouvelle-suggestion', async (req, res) => {
             new ButtonBuilder()
                 .setLabel('🔗 Gérer la demande')
                 .setStyle(ButtonStyle.Link)
-                .setURL(`https://movies-for-you.onrender.com/admin/approve_form/${film_id}`)
-        );
+                .setURL(`https://moviesforyour.ddns.net/admin/approve_form/${film_id}`)
+            );
 
         await channel.send({ embeds: [embed], components: [row] });
         res.status(200).send("OK");
