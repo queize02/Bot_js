@@ -15,7 +15,7 @@ app.use(express.json());
 // Récupération sécurisée du TOKEN
 client.login(process.env.TOKEN);
 
-const CHANNEL_ID = "1306326162312331346"; 
+const CHANNEL_ID = "1350539647154917537"; 
 
 client.once('ready', () => {
     console.log(`✅ Bot connecté : ${client.user.tag}`);
