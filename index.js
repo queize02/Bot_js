@@ -12,15 +12,29 @@ const client = new Client({
 
 app.use(express.json());
 
+// --- SECTION UPTIME ROBOT / RENDER ---
+// Cette route répond à UptimeRobot pour garder le bot éveillé
+app.get('/', (req, res) => {
+    res.send('✅ Le Bot MFY est en ligne et opérationnel !');
+});
+
+// Un seul serveur qui écoute sur le port fourni par Render
+const PORT = process.env.PORT || 10000;
+app.listen(PORT, () => {
+    console.log(`🚀 Serveur web actif sur le port ${PORT}`);
+});
+// -------------------------------------
+
 // Récupération sécurisée du TOKEN
 client.login(process.env.TOKEN);
 
 const CHANNEL_ID = "1350539647154917537"; 
 
 client.once('ready', () => {
-    console.log(`✅ Bot connecté : ${client.user.tag}`);
+    console.log(`✅ Bot Discord connecté : ${client.user.tag}`);
 });
 
+// Route pour recevoir les suggestions du site Python
 app.post('/nouvelle-suggestion', async (req, res) => {
     try {
         const { titre, user, affiche, film_id } = req.body;
@@ -37,15 +51,12 @@ app.post('/nouvelle-suggestion', async (req, res) => {
                 .setLabel('🔗 Gérer la demande')
                 .setStyle(ButtonStyle.Link)
                 .setURL(`https://moviesforyour.ddns.net/admin/approve_form/${film_id}`)
-            );
+        );
 
         await channel.send({ embeds: [embed], components: [row] });
-        res.status(200).send("OK");
-    } catch (e) {
-        console.error(e);
-        res.status(500).send("Erreur");
+        res.status(200).send('Notification envoyée');
+    } catch (error) {
+        console.error("Erreur bot:", error);
+        res.status(500).send('Erreur lors de l\'envoi');
     }
 });
-
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => console.log(`🚀 Serveur actif sur le port ${PORT}`));
