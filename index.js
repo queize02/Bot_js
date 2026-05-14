@@ -50,7 +50,7 @@ app.post('/nouvelle-suggestion', async (req, res) => {
             new ButtonBuilder()
                 .setLabel('🔗 Gérer la demande')
                 .setStyle(ButtonStyle.Link)
-                .setURL(`https://moviesforyour.ddns.net/admin/approve_form/${film_id}`)
+                .setURL(`https://moviesforyou.ddns.net/admin/approve_form/${film_id}`)
         );
 
         await channel.send({ embeds: [embed], components: [row] });
