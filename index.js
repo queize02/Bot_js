@@ -28,7 +28,7 @@ app.listen(PORT, () => {
 // Récupération sécurisée du TOKEN
 client.login(process.env.TOKEN);
 
-const CHANNEL_ID = "1350539647154917537"; 
+const CHANNEL_ID = '1350539647154917537'; // Ton ID de salon Discord
 
 client.once('ready', () => {
     console.log(`✅ Bot Discord connecté : ${client.user.tag}`);
