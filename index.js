@@ -26,7 +26,11 @@ app.listen(PORT, () => {
 // -------------------------------------
 
 // Récupération sécurisée du TOKEN
-client.login(process.env.TOKEN);
+// Remplace client.login(process.env.TOKEN); par ceci :
+client.login(process.env.TOKEN).catch(err => {
+    console.error("❌ ERREUR DE CONNEXION DISCORD :");
+    console.error(err);
+});
 
 const CHANNEL_ID = '1350539647154917537'; // Ton ID de salon Discord
 
