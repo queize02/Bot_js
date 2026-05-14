@@ -27,10 +27,7 @@ app.listen(PORT, () => {
 
 // Récupération sécurisée du TOKEN
 // Remplace client.login(process.env.TOKEN); par ceci :
-client.login(process.env.TOKEN).catch(err => {
-    console.error("❌ ERREUR DE CONNEXION DISCORD :");
-    console.error(err);
-});
+
 
 const CHANNEL_ID = '1350539647154917537'; // Ton ID de salon Discord
 
@@ -63,4 +60,10 @@ app.post('/nouvelle-suggestion', async (req, res) => {
         console.error("Erreur bot:", error);
         res.status(500).send('Erreur lors de l\'envoi');
     }
+});
+
+// --- DÉPLACE CECI TOUT EN BAS DU FICHIER ---
+client.login(process.env.TOKEN).catch(err => {
+    console.error("❌ ERREUR DE CONNEXION DISCORD :");
+    console.error(err);
 });
