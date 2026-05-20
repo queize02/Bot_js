@@ -64,7 +64,7 @@ app.post('/nouvelle-suggestion', async (req, res) => {
     }
 });
 
-app.post('/nouvelle-ajout', async (req, res) => {
+app.post('/admin_manuel', async (req, res) => {
     try {
         const { titre, user, affiche, film_id } = req.body;
         const channel = await client.channels.fetch(CHANNEL_ID2);
