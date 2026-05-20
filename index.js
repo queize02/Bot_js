@@ -30,6 +30,8 @@ app.listen(PORT, () => {
 
 
 const CHANNEL_ID = '1350539647154917537'; // Ton ID de salon Discord
+const CHANNEL_ID2 = '1501949852387381480'; // Ton ID de salon Discord
+
 
 client.once('ready', () => {
     console.log(`✅ Bot Discord connecté : ${client.user.tag}`);
@@ -53,6 +55,25 @@ app.post('/nouvelle-suggestion', async (req, res) => {
                 .setStyle(ButtonStyle.Link)
                 .setURL(`https://moviesforyou.ddns.net/admin/approve_form/${film_id}`)
         );
+
+        await channel.send({ embeds: [embed], components: [row] });
+        res.status(200).send('Notification envoyée');
+    } catch (error) {
+        console.error("Erreur bot:", error);
+        res.status(500).send('Erreur lors de l\'envoi');
+    }
+});
+
+app.post('/nouvelle-ajout', async (req, res) => {
+    try {
+        const { titre, user, affiche, film_id } = req.body;
+        const channel = await client.channels.fetch(CHANNEL_ID2);
+
+        const embed = new EmbedBuilder()
+            .setTitle('💡 Nouvelle ajout')
+            .setDescription(`Film : **${titre}**\nProposé par : **${user}**`)
+            .setThumbnail(affiche)
+            .setColor(0x00FF00);
 
         await channel.send({ embeds: [embed], components: [row] });
         res.status(200).send('Notification envoyée');
