@@ -66,19 +66,20 @@ app.post('/nouvelle-suggestion', async (req, res) => {
 
 app.post('/admin_manuel', async (req, res) => {
     try {
-        const { titre, user, affiche, film_id } = req.body;
+        const { titre, user, affiche } = req.body;
         const channel = await client.channels.fetch(CHANNEL_ID2);
 
         const embed = new EmbedBuilder()
-            .setTitle('💡 Nouvelle ajout')
-            .setDescription(`Film : **${titre}**\nProposé par : **${user}**`)
+            .setTitle('🎬 Nouveau film disponible !')
+            .setDescription(`Le film **${titre}** proposé par **${user}** a été ajouté au catalogue ! 🔥`)
             .setThumbnail(affiche)
             .setColor(0x00FF00);
 
-        await channel.send({ embeds: [embed], components: [row] });
-        res.status(200).send('Notification envoyée');
+        // On envoie juste l'embed sans le bouton "row" cassé
+        await channel.send({ embeds: [embed] });
+        res.status(200).send('Notification de nouveauté envoyée');
     } catch (error) {
-        console.error("Erreur bot:", error);
+        console.error("Erreur bot nouveautés:", error);
         res.status(500).send('Erreur lors de l\'envoi');
     }
 });
