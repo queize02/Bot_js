@@ -54,7 +54,7 @@ app.post('/nouvelle-suggestion', async (req, res) => {
                 .setLabel('🔗 Gérer la demande')
                 .setStyle(ButtonStyle.Link)
                 // MODIFIE CETTE LIGNE DANS index.js
-.setURL(`https://moviesforyou.ddns.net/admin_approuver/${film_id}`)
+                .setURL(`https://moviesforyou.ddns.net/admin_approuver/${film_id}`)
             );
 
         await channel.send({ embeds: [embed], components: [row] });
