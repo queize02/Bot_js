@@ -53,8 +53,9 @@ app.post('/nouvelle-suggestion', async (req, res) => {
             new ButtonBuilder()
                 .setLabel('🔗 Gérer la demande')
                 .setStyle(ButtonStyle.Link)
-                .setURL(`https://moviesforyou.ddns.net/admin_approuver/${film_id}`)
-        );
+                // MODIFIE CETTE LIGNE DANS index.js
+.setURL(`https://moviesforyou.ddns.net/admin_approuver/${film_id}`)
+            );
 
         await channel.send({ embeds: [embed], components: [row] });
         res.status(200).send('Notification envoyée');
@@ -85,6 +86,9 @@ app.post('/admin_manuel', async (req, res) => {
         res.status(500).send('Erreur bot');
     }
 });
+
+
+
 // --- DÉPLACE CECI TOUT EN BAS DU FICHIER ---
 client.login(process.env.TOKEN).catch(err => {
     console.error("❌ ERREUR DE CONNEXION DISCORD :");
