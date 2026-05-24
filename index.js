@@ -38,9 +38,10 @@ client.once('ready', () => {
 });
 
 // Route pour recevoir les suggestions du site Python
+// Route pour recevoir les suggestions du site Python
 app.post('/nouvelle-suggestion', async (req, res) => {
     try {
-        const { titre, user, affiche, film_id } = req.body;
+        const { titre, user, affiche } = req.body;
         const channel = await client.channels.fetch(CHANNEL_ID);
 
         const embed = new EmbedBuilder()
@@ -49,15 +50,9 @@ app.post('/nouvelle-suggestion', async (req, res) => {
             .setThumbnail(affiche)
             .setColor(0x00FF00);
 
-        const row = new ActionRowBuilder().addComponents(
-            new ButtonBuilder()
-                .setLabel('🔗 Gérer la demande')
-                .setStyle(ButtonStyle.Link)
-                // MODIFIE CETTE LIGNE DANS index.js
-                .setURL(`https://moviesforyou.ddns.net/admin_approuver/${film_id}`)
-            );
-
-        await channel.send({ embeds: [embed], components: [row] });
+        // On envoie SEULEMENT l'embed, sans 'components' car on utilise le Dashboard Web
+        await channel.send({ embeds: [embed] });
+        
         res.status(200).send('Notification envoyée');
     } catch (error) {
         console.error("Erreur bot:", error);
