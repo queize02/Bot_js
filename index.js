@@ -87,7 +87,26 @@ app.post('/admin_manuel', async (req, res) => {
     }
 });
 
+// Ajoute ceci dans index.js
+const axios = require('axios'); // Assure-toi d'avoir fait 'npm install axios'
 
+client.on('messageCreate', async (message) => {
+    if (message.content.startsWith('!suggerer ')) {
+        const titre = message.content.replace('!suggerer ', '').trim();
+        const user = message.author.username;
+
+        try {
+            // Appel à ton API Flask
+            await axios.post('https://movies-for-you-kpxa.onrender.com/api/discord_suggerer', {
+                titre: titre,
+                user: user
+            });
+            message.reply(`✅ La demande pour **${titre}** a été envoyée !`);
+        } catch (error) {
+            message.reply("❌ Erreur : Film introuvable ou serveur indisponible.");
+        }
+    }
+});
 
 // --- DÉPLACE CECI TOUT EN BAS DU FICHIER ---
 client.login(process.env.TOKEN).catch(err => {
