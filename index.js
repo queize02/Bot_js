@@ -41,47 +41,51 @@ client.once('ready', () => {
 // Route pour recevoir les suggestions du site Python
 app.post('/nouvelle-suggestion', async (req, res) => {
     try {
-        const { titre, user, affiche } = req.body;
-        const channel = await client.channels.fetch(CHANNEL_ID);
+        const { titre, media_type, user, affiche } = req.body;
+        const channel = await client.channels.fetch('1350539647154917537');
+
+        // Logique dynamique pour éviter le titre "Film" forcé
+        const titreEmbed = (media_type === 'tv') ? "📢 Nouvelle série suggérée !" : "📢 Nouveau film suggéré !";
+        const descriptionEmbed = (media_type === 'tv') 
+            ? `La série **${titre}** a été suggérée par ${user} ! 🔥` 
+            : `Le film **${titre}** a été suggéré par ${user} ! 🔥`;
 
         const embed = new EmbedBuilder()
-            .setTitle('💡 Nouvelle suggestion')
-            .setDescription(`Film : **${titre}**\nProposé par : **${user}**`)
+            .setTitle(titreEmbed)
+            .setDescription(descriptionEmbed)
             .setThumbnail(affiche)
-            .setColor(0x00FF00);
+            .setColor(0x00FF00); // Vert
 
-        // On envoie SEULEMENT l'embed, sans 'components' car on utilise le Dashboard Web
         await channel.send({ embeds: [embed] });
-        
         res.status(200).send('Notification envoyée');
     } catch (error) {
-        console.error("Erreur bot:", error);
-        res.status(500).send('Erreur lors de l\'envoi');
-    }
-});
-
-app.post('/admin_manuel', async (req, res) => {
-    try {
-        const { titre, affiche } = req.body;
-        const channel = await client.channels.fetch(CHANNEL_ID2);
-
-        // Création de l'embed vert simplifié avec "Film ajouté"
-        const embed = new EmbedBuilder()
-            .setTitle('🎬 Film ajouté')
-            .setDescription(`Le film **${titre}** est maintenant disponible sur le catalogue ! 🔥`)
-            .setThumbnail(affiche)
-            .setColor(0x00FF00); // Vert de succès
-
-        // Envoi dans le salon des nouveautés (sans le "row" qui faisait planter)
-        await channel.send({ embeds: [embed] });
-        
-        res.status(200).send('Notification envoyée avec succès');
-    } catch (error) {
-        console.error("Erreur lors de l'envoi de la nouveauté :", error);
+        console.error("Erreur notification :", error);
         res.status(500).send('Erreur bot');
     }
 });
+app.post('/admin_manuel', async (req, res) => {
+    try {
+        // Ajout de media_type dans la déstructuration
+        const { titre, affiche, media_type } = req.body; 
+        const channel = await client.channels.fetch(CHANNEL_ID2);
 
+        // Logique dynamique
+        const titreEmbed = (media_type === 'tv') ? '🎬 Série ajoutée' : '🎬 Film ajouté';
+        const descriptionEmbed = (media_type === 'tv') ? `La série **${titre}** est disponible ! 🔥` : `Le film **${titre}** est disponible ! 🔥`;
+
+        const embed = new EmbedBuilder()
+            .setTitle(titreEmbed)
+            .setDescription(descriptionEmbed)
+            .setThumbnail(affiche)
+            .setColor(0x00FF00);
+
+        await channel.send({ embeds: [embed] });
+        res.status(200).send('Notification envoyée');
+    } catch (error) {
+        console.error(error);
+        res.status(500).send('Erreur bot');
+    }
+});
 // Ajoute ceci dans index.js
 const axios = require('axios'); // Assure-toi d'avoir fait 'npm install axios'
 
@@ -92,7 +96,7 @@ client.on('messageCreate', async (message) => {
 
         try {
             // Appel à ton API Flask
-            await axios.post('https://movies-for-you-kpxa.onrender.com/api/discord_suggerer', {
+            await axios.post('https://movies-for-you-kpxa.onarender.com/api/discord_suggerer', {
                 titre: titre,
                 user: user
             });
