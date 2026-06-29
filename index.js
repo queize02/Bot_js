@@ -17,6 +17,26 @@ app.use(express.json());
 app.get('/', (req, res) => {
     res.send('✅ Le Bot MFY est en ligne et opérationnel !');
 });
+app.post('/nouvelle-suggestion', async (req, res) => {
+    const { titre, media_type, user, affiche } = req.body;
+    console.log(`🤖 Notification reçue pour : ${titre}`);
+
+    try {
+        const channel = await client.channels.fetch('1350539647154917537'); // Ton ID de salon
+        
+        const embed = new EmbedBuilder()
+            .setTitle(media_type === 'tv' ? '📢 Nouvelle Série !' : '📢 Nouveau Film !')
+            .setDescription(`**Titre :** ${titre}\n**Proposé par :** ${user}`)
+            .setThumbnail(affiche)
+            .setColor(media_type === 'tv' ? 0x00FF00 : 0xFF9900);
+
+        await channel.send({ embeds: [embed] });
+        res.status(200).send('Notification envoyée avec succès');
+    } catch (error) {
+        console.error("Erreur lors de l'envoi Discord :", error);
+        res.status(500).send('Erreur lors de la notification');
+    }
+});
 
 // Un seul serveur qui écoute sur le port fourni par Render
 const PORT = process.env.PORT || 10000;
@@ -39,30 +59,7 @@ client.once('ready', () => {
 
 // Route pour recevoir les suggestions du site Python
 // Route pour recevoir les suggestions du site Python
-app.post('/nouvelle-suggestion', async (req, res) => {
-    try {
-        const { titre, media_type, user, affiche } = req.body;
-        const channel = await client.channels.fetch('1350539647154917537');
 
-        // Logique dynamique pour éviter le titre "Film" forcé
-        const titreEmbed = (media_type === 'tv') ? "📢 Nouvelle série suggérée !" : "📢 Nouveau film suggéré !";
-        const descriptionEmbed = (media_type === 'tv') 
-            ? `La série **${titre}** a été suggérée par ${user} ! 🔥` 
-            : `Le film **${titre}** a été suggéré par ${user} ! 🔥`;
-
-        const embed = new EmbedBuilder()
-            .setTitle(titreEmbed)
-            .setDescription(descriptionEmbed)
-            .setThumbnail(affiche)
-            .setColor(0x00FF00); // Vert
-
-        await channel.send({ embeds: [embed] });
-        res.status(200).send('Notification envoyée');
-    } catch (error) {
-        console.error("Erreur notification :", error);
-        res.status(500).send('Erreur bot');
-    }
-});
 app.post('/admin_manuel', async (req, res) => {
     try {
         // Ajout de media_type dans la déstructuration
