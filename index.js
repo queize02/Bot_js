@@ -1,7 +1,8 @@
-const { Client, GatewayIntentBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
+const { Client, GatewayIntentBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, REST, Routes } = require('discord.js');
 const express = require('express');
 const app = express();
-const { register: registerSuggester } = require('./commands/suggester');
+const { commandData: suggererCommand, execute: executeSuggester } = require('./commands/suggerer');
+const { commandData: listCommand, execute: executeList } = require('./commands/list');
 
 const client = new Client({ 
     intents: [
@@ -12,7 +13,7 @@ const client = new Client({
 });
 
 app.use(express.json());
-const API_BASE = process.env.MFY_API_URL || 'http://flask_app:5000';Z
+const API_BASE = process.env.MFY_API_URL || 'http://flask_app:5000';
 const PORT = process.env.PORT || 1000;
 
 // --- SECTION UPTIME ROBOT / RENDER ---
@@ -28,10 +29,10 @@ app.post('/nouvelle-suggestion', async (req, res) => {
         const channel = await client.channels.fetch('1350539647154917537'); // Ton ID de salon
         
         const embed = new EmbedBuilder()
-            .setTitle(media_type === 'tv' ? '📢 Nouvelle Série !' : '📢 Nouveau Film !')
-            .setDescription(`**Titre :** ${titre}\n**Proposé par :** ${user}`)
-            .setThumbnail(affiche)
-            .setColor(media_type === 'tv' ? 0x00FF00 : 0xFF9900);
+           // .setTitle(media_type === 'tv' ? '📢 Nouvelle Série !' : '📢 Nouveau Film !')
+            //.setDescription(`**Titre :** ${titre}\n**Proposé par :** ${user}`)
+            //.setThumbnail(affiche)
+            //.setColor(media_type === 'tv' ? 0x00FF00 : 0xFF9900);
 
         await channel.send({ embeds: [embed] });
         res.status(200).send('Notification envoyée avec succès');
@@ -48,13 +49,55 @@ app.post('/nouvelle-suggestion', async (req, res) => {
 // Remplace client.login(process.env.TOKEN); par ceci :
 
 
-const CHANNEL_ID = '1350539647154917537'; // Ton ID de salon Discord
+const CHANNEL_ID = '1521888412754247955'; // Ton ID de salon Discord
 const CHANNEL_ID2 = '1501949852387381480'; // Ton ID de salon Discord
 
 
-client.once('ready', () => {
+client.once('ready', async () => {
     console.log(`✅ Bot Discord connecté : ${client.user.tag}`);
     console.log(`🌐 API_BASE = ${API_BASE}`);
+
+    try {
+        const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
+        const commandsToRegister = [suggererCommand.toJSON(), listCommand.toJSON()];
+        const commandList = commandsToRegister.map((command) => `/${command.name}`).join(', ');
+        const commandNames = commandsToRegister.map((command) => command.name);
+        const route = process.env.GUILD_ID
+            ? Routes.applicationGuildCommands(client.user.id, process.env.GUILD_ID)
+            : Routes.applicationCommands(client.user.id);
+
+        await rest.put(route, { body: commandsToRegister });
+        console.log(`✅ ${commandsToRegister.length} slash command(s) chargée(s) : ${commandList}`);
+
+        if (process.env.GUILD_ID) {
+            const globalCommands = await rest.get(Routes.applicationCommands(client.user.id));
+            for (const globalCommand of globalCommands) {
+                if (commandNames.includes(globalCommand.name)) {
+                    await rest.delete(Routes.applicationCommand(client.user.id, globalCommand.id));
+                    console.log(`🗑️ Suppression de la commande globale en doublon : /${globalCommand.name}`);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Erreur d’enregistrement de la slash command :', error);
+    }
+});
+
+const suggererCommandName = suggererCommand.toJSON().name;
+const listCommandName = listCommand.toJSON().name;
+
+const commandHandlers = new Map([
+    [suggererCommandName, executeSuggester],
+    [listCommandName, executeList],
+]);
+
+client.on('interactionCreate', async (interaction) => {
+    if (!interaction.isChatInputCommand()) return;
+
+    const handler = commandHandlers.get(interaction.commandName);
+    if (!handler) return;
+
+    await handler(interaction, API_BASE);
 });
 
 // Route pour recevoir les suggestions du site Python
@@ -83,8 +126,6 @@ app.post('/admin_manuel', async (req, res) => {
         res.status(500).send('Erreur bot');
     }
 });
-
-registerSuggester(client, API_BASE);
 
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Serveur web actif sur le port ${PORT}`);
