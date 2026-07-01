@@ -1,6 +1,7 @@
 const { Client, GatewayIntentBits, ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require('discord.js');
 const express = require('express');
 const app = express();
+const { register: registerSuggester } = require('./commands/suggester');
 
 const client = new Client({ 
     intents: [
@@ -11,6 +12,8 @@ const client = new Client({
 });
 
 app.use(express.json());
+const API_BASE = process.env.MFY_API_URL || 'http://flask_app:5000';Z
+const PORT = process.env.PORT || 1000;
 
 // --- SECTION UPTIME ROBOT / RENDER ---
 // Cette route répond à UptimeRobot pour garder le bot éveillé
@@ -39,11 +42,7 @@ app.post('/nouvelle-suggestion', async (req, res) => {
 });
 
 // Un seul serveur qui écoute sur le port fourni par Render
-const PORT = process.env.PORT || 10000;
-app.listen(PORT, () => {
-    console.log(`🚀 Serveur web actif sur le port ${PORT}`);
-});
-// -------------------------------------
+// -----------------------
 
 // Récupération sécurisée du TOKEN
 // Remplace client.login(process.env.TOKEN); par ceci :
@@ -55,6 +54,7 @@ const CHANNEL_ID2 = '1501949852387381480'; // Ton ID de salon Discord
 
 client.once('ready', () => {
     console.log(`✅ Bot Discord connecté : ${client.user.tag}`);
+    console.log(`🌐 API_BASE = ${API_BASE}`);
 });
 
 // Route pour recevoir les suggestions du site Python
@@ -83,29 +83,15 @@ app.post('/admin_manuel', async (req, res) => {
         res.status(500).send('Erreur bot');
     }
 });
-// Ajoute ceci dans index.js
-const axios = require('axios'); // Assure-toi d'avoir fait 'npm install axios'
 
-client.on('messageCreate', async (message) => {
-    if (message.content.startsWith('!suggerer ')) {
-        const titre = message.content.replace('!suggerer ', '').trim();
-        const user = message.author.username;
+registerSuggester(client, API_BASE);
 
-        try {
-            // Appel à ton API Flask
-            await axios.post('https://movies-for-you-kpxa.onarender.com/api/discord_suggerer', {
-                titre: titre,
-                user: user
-            });
-            message.reply(`✅ La demande pour **${titre}** a été envoyée !`);
-        } catch (error) {
-            message.reply("❌ Erreur : Film introuvable ou serveur indisponible.");
-        }
-    }
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Serveur web actif sur le port ${PORT}`);
 });
-
 // --- DÉPLACE CECI TOUT EN BAS DU FICHIER ---
 client.login(process.env.TOKEN).catch(err => {
     console.error("❌ ERREUR DE CONNEXION DISCORD :");
     console.error(err);
 });
+
